@@ -3,7 +3,7 @@ export function ProfileCard({ user }) {
         <div className="bg-white rounded-xl p-6 shadow-md max-w-xs mx-auto md:mx-0">
             <img
                 className="mx-auto rounded-full w-24 h-24"
-                src={`https://avatars.dicebear.com/api/identicon/${encodeURIComponent(user.name)}.svg`}
+                src={`https://api.dicebear.com/6.x/identicon/svg?seed=${encodeURIComponent(user.name)}`}
                 alt={user.name}
             />
             <h2 className="text-center mt-2 text-xl font-semibold">{user.name}</h2>
