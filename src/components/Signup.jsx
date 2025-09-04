@@ -16,7 +16,8 @@ export default function SignUp({ onSignUpSuccess }) {
         setLoading(false);
         return;
       }
-      await account.create('unique()', email, password);
+      await account.create({ userId: 'unique()', email, password });
+
       toast.success('Sign up successful! Please log in.');
       if (onSignUpSuccess) onSignUpSuccess();
     } catch (error) {
