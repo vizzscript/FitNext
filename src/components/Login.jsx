@@ -13,7 +13,10 @@ export default function Login({ onLogin }) {
   async function sendVerificationEmail() {
     try {
       // Make sure this URL matches your frontend verification route
-      await account.createVerification('http://localhost:3002/verifyemail');
+      await account.createVerification({
+        url: 'http://localhost:3002/verifyemail'
+      });
+
       toast.success('Verification email sent! Please check your inbox.');
     } catch (error) {
       toast.error(error.message);
@@ -35,7 +38,7 @@ export default function Login({ onLogin }) {
 
       // If no session, create one
       if (!user) {
-        await account.createEmailPasswordSession(email, password);
+        await account.createEmailPasswordSession({ email, password });
         user = await account.get();
       }
 
