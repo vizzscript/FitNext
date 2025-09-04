@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+
 summary::-webkit-details-marker {
   display: none
 }
@@ -17,4 +18,16 @@ summary::-webkit-details-marker {
   mask-image: radial-gradient(ellipse at 50% 40%, black 0%, transparent 55%);
   z-index: -1;
   background-position-x: center;
+}
+
+:root {
+  --toast-background: #ffffff;
+  --toast-color: #1a202c;
+  /* dark gray */
+}
+
+.dark {
+  --toast-background: #1a202c;
+  --toast-color: #f7fafc;
+  /* light gray */
 }
