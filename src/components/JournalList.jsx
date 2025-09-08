@@ -4,13 +4,13 @@ export function JournalList({ journals }) {
             {journals.map(({ id, title, details, time }) => (
                 <div
                     key={id}
-                    className="bg-gray-50 rounded-md p-3 shadow flex justify-between items-center"
+                    className="rounded-md p-3 shadow flex justify-between items-center"
                 >
                     <div>
-                        <div className="font-semibold text-gray-700">{title}</div>
-                        <div className="text-xs text-gray-400">{details}</div>
+                        <div className="font-semibold ">{title}</div>
+                        <div className="text-xs ">{details}</div>
                     </div>
-                    <div className="text-xs text-gray-400">{time}</div>
+                    <div className="text-xs">{time}</div>
                 </div>
             ))}
         </div>
