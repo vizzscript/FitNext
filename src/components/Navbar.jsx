@@ -1,6 +1,9 @@
 
 // Optionally use TailwindCSS, adjust classes as needed
+import { useTheme } from "next-themes";
+
 export function Navbar({ currentTab, onTabChange, user, onProfileClick }) {
+    const { theme, setTheme } = useTheme();
     const tabs = [
         { id: "activities", label: "Activities", icon: "🏃" },
         { id: "diet", label: "Diet", icon: "🍽️" },
@@ -8,7 +11,7 @@ export function Navbar({ currentTab, onTabChange, user, onProfileClick }) {
     ];
 
     return (
-        <nav className="flex items-center justify-between px-8 py-4 bg-white shadow sticky top-0 z-50">
+        <nav className="flex items-center justify-between px-8 py-4 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow sticky top-0 z-50">
             {/* Branding */}
             <div className="font-bold text-2xl text-orange-600">FITNEXT</div>
 
@@ -20,24 +23,24 @@ export function Navbar({ currentTab, onTabChange, user, onProfileClick }) {
                         onClick={() => onTabChange(tab.id)}
                         className={`flex items-center gap-2 font-semibold px-3 py-2 rounded-md ${currentTab === tab.id
                             ? "text-orange-600 border-b-2 border-orange-600"
-                            : "text-gray-600 hover:bg-gray-100"
+                            : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                             } transition`}
                     >
                         <span>{tab.icon}</span>
                         {tab.label}
+
                     </button>
                 ))}
             </div>
 
-            {/* User Profile Icon */}
-            <div>
-                {/* Use a button to open profile dropdown */}
+            {/* Theme Toggle */}
+            <div className="flex items-center gap-3">
                 <button
-                    onClick={onProfileClick}
-                    aria-label="User Profile"
-                    className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-xl font-bold uppercase shadow hover:ring-2 ring-orange-400 transition"
+                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                    className="px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                    aria-label="Toggle theme"
                 >
-                    {user?.name ? user.name.charAt(0) : "U"}
+                    {theme === 'dark' ? '🌙' : '☀️'}
                 </button>
             </div>
         </nav>

@@ -1,8 +1,8 @@
 export function RecentWorkoutTable({ workouts }) {
     return (
-        <table className="w-full text-left border-separate border-spacing-y-2 mt-4">
+        <table className="w-full text-left border-separate border-spacing-y-2 mt-4 text-gray-900 dark:text-gray-100">
             <thead>
-                <tr className="text-gray-500 text-xs uppercase">
+                <tr className="text-gray-500 dark:text-gray-400 text-xs uppercase">
                     <th>Workout</th>
                     <th>Distance (kms)</th>
                     <th>Duration (mins)</th>
@@ -12,7 +12,7 @@ export function RecentWorkoutTable({ workouts }) {
             </thead>
             <tbody>
                 {workouts.map(({ id, name, distance, duration, datetime, completion }) => (
-                    <tr key={id} className="bg-white rounded shadow">
+                    <tr key={id} className="bg-white dark:bg-gray-800 rounded shadow">
                         <td className="p-2">{name}</td>
                         <td className="p-2">{distance}</td>
                         <td className="p-2">{duration}</td>

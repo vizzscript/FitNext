@@ -1,6 +1,7 @@
 // src/app/layout.js (server component)
 import { Toaster } from "react-hot-toast";
 import './app.css';
+import ThemeProvider from "./theme-provider";
 
 export const metadata = {
   title: "FitNext",
@@ -9,19 +10,21 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head />
-      <body>
+      <body className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+        <ThemeProvider>
           {children}
-        <Toaster
-        position="top-right"
-        toastOptions={{
-          style: {
-            background: "var(--toast-background)", // Use CSS variable for theme-aware bg
-            color: "var(--toast-color)", // Use CSS variable for theme-aware text
-          },
-        }}
-      />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              style: {
+                background: "var(--toast-background)",
+                color: "var(--toast-color)",
+              },
+            }}
+          />
+        </ThemeProvider>
       </body>
     </html>
   );
