@@ -21,13 +21,13 @@ summary::-webkit-details-marker {
 }
 
 :root {
-  --toast-background: #ffffff;
-  --toast-color: #1a202c;
+  --toast-background: #1a202c;
+  --toast-color: #ffffff;
   /* dark gray */
 }
 
 .dark {
-  --toast-background: #1a202c;
-  --toast-color: #f7fafc;
+  --toast-background: #f7fafc;
+  --toast-color: #1a202c;
   /* light gray */
 }

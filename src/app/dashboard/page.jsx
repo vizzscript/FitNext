@@ -1,17 +1,16 @@
 "use client";
 
-import { JournalList } from "@/components/JournalList";
+import { ActivitiesTab } from "@/components/ActivitiesTab";
+import { DietTab } from "@/components/DietTab";
+import { FastingTab } from "@/components/FastingTab";
 import { Navbar } from "@/components/Navbar";
-import { RecentWorkoutTable } from "@/components/RecentWorkoutTable";
 import { Sidebar } from "@/components/Sidebar";
-import { StatCard } from "@/components/StatsCard";
 import { UserProfileForm } from "@/components/UserProfileForm";
 import { account, databases } from "@services/appwrite.client";
 import { Query } from "appwrite";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { ActivityChart } from "../../components/ActivityChart";
 
 export default function Dashboard() {
     const router = useRouter();
@@ -224,8 +223,8 @@ export default function Dashboard() {
                 user={user}
                 onProfileClick={() => setProfileOpen((prev) => !prev)}
             />
-            <div className="p-6 bg-gray-100 dark:bg-gray-900 min-h-screen relative w-full mx-auto">
-                <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">
+            <div className="p-6 min-h-screen relative w-full mx-auto">
+                <h1 className="text-3xl font-bold mb-8 text-center">
                     Welcome, {user?.name || "User"}
                 </h1>
 
@@ -233,38 +232,30 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Section */}
                     <div className="lg:col-span-2 space-y-8">
-                        {/* Stats Cards inside main content */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {stats.map((stat, i) => (
-                                <div key={i} className="h-40 max-w-xs mx-auto w-full">
-                                    <StatCard {...stat} className="h-full" />
-                                </div>
-                            ))}
-                        </div>
+                        {currentTab === "activities" && (
+                            <ActivitiesTab
+                                stats={stats}
+                                chartData={effectiveChartData}
+                                journals={effectiveJournals}
+                                workouts={effectiveWorkouts}
+                                dataLoading={dataLoading}
+                            />
+                        )}
 
+                        {currentTab === "diet" && (
+                            <DietTab
+                                user={user}
+                                journals={effectiveJournals}
+                                dataLoading={dataLoading}
+                            />
+                        )}
 
-                        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-                            <h2 className="font-semibold text-xl mb-4">Activity Statistics</h2>
-                            <ActivityChart data={effectiveChartData} />
-                        </div>
-
-                        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-                            <h2 className="font-semibold text-xl mb-4">Journals</h2>
-                            {dataLoading ? (
-                                <div className="animate-pulse h-24 bg-gray-100 rounded" />
-                            ) : (
-                                <JournalList journals={effectiveJournals} />
-                            )}
-                        </div>
-
-                        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-                            <h2 className="font-semibold text-xl mb-4">Recent Workout</h2>
-                            {dataLoading ? (
-                                <div className="animate-pulse h-24 bg-gray-100 rounded" />
-                            ) : (
-                                <RecentWorkoutTable workouts={effectiveWorkouts} />
-                            )}
-                        </div>
+                        {currentTab === "fasting" && (
+                            <FastingTab
+                                user={user}
+                                dataLoading={dataLoading}
+                            />
+                        )}
                     </div>
 
                     {/* Sidebar */}

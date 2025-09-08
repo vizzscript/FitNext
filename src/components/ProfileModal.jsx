@@ -1,8 +1,13 @@
+"use client";
+
 import { storage } from "@services/appwrite.client";
 import { ID } from "appwrite";
+import { useTheme } from "next-themes";
 import { useState } from "react";
 
 export default function ProfileModal({ user, onClose, onSave }) {
+    const { setTheme } = useTheme();
+
     const [formData, setFormData] = useState({
         name: user.name,
         age: user.age,
@@ -43,19 +48,21 @@ export default function ProfileModal({ user, onClose, onSave }) {
 
     const handleThemeChange = (theme) => {
         setFormData(prev => ({ ...prev, theme }));
+        setTheme(theme); // ✅ apply immediately across layout
     };
 
     const handleSave = () => {
         if (onSave) onSave(formData);
+        setTheme(formData.theme); // ✅ ensure theme persists globally
         onClose();
     };
 
     return (
-        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg w-full max-w-2xl p-7 relative">
+        <div className="fixed inset-0 backdrop-blur-2xl flex items-center justify-center z-50">
+            <div className="rounded-lg shadow-lg bg-gray-900 w-full max-w-2xl p-7 relative">
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl"
+                    className="absolute top-4 right-4 text-xl"
                 >
                     ✕
                 </button>
@@ -66,7 +73,7 @@ export default function ProfileModal({ user, onClose, onSave }) {
                         alt="Avatar"
                         className="w-24 h-24 rounded-full shadow-md object-cover border-2 border-orange-400"
                     />
-                    <label className="mt-3 px-4 py-2 text-sm bg-orange-500 text-white rounded cursor-pointer hover:bg-orange-600">
+                    <label className="mt-3 px-4 py-2 text-sm bg-orange-500 rounded cursor-pointer text-white hover:bg-orange-600">
                         {uploading ? "Uploading..." : "Change Avatar"}
                         <input
                             type="file"
@@ -88,32 +95,31 @@ export default function ProfileModal({ user, onClose, onSave }) {
                         { label: "Email", key: "email", type: "email" }
                     ].map(field => (
                         <div key={field.key}>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{field.label}</label>
+                            <label className="block text-sm font-medium text-gray-300">{field.label}</label>
                             <input
                                 type={field.type}
                                 name={field.key}
                                 value={formData[field.key]}
                                 onChange={handleChange}
-                                className="mt-1 block w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring focus:ring-orange-400"
+                                className="mt-1 block w-full border border-gray-700 rounded-lg px-3 py-2 bg-gray-800 text-gray-100 focus:ring focus:ring-orange-400"
                             />
                         </div>
                     ))}
-                    <div>
-                        <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Theme</span>
-                        <div className="flex space-x-5">
-                            <label>
-                                <input type="radio" name="theme" value="light" checked={formData.theme === "light"} onChange={() => handleThemeChange("light")} />
-                                <span className="ml-2">Light</span>
-                            </label>
-                            <label>
-                                <input type="radio" name="theme" value="dark" checked={formData.theme === "dark"} onChange={() => handleThemeChange("dark")} />
-                                <span className="ml-2">Dark</span>
-                            </label>
-                        </div>
-                    </div>
+
+
                     <div className="flex justify-end space-x-3 mt-7">
-                        <button onClick={onClose} className="px-5 py-2 bg-gray-200 dark:bg-gray-700 dark:text-gray-100 rounded hover:bg-gray-300 dark:hover:bg-gray-600">Cancel</button>
-                        <button onClick={handleSave} className="px-5 py-2 bg-orange-500 text-white rounded hover:bg-orange-600">Update Profile</button>
+                        <button
+                            onClick={onClose}
+                            className="px-5 py-2 bg-gray-700 text-gray-100 rounded hover:bg-gray-600"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            className="px-5 py-2 bg-orange-500 text-white rounded hover:bg-orange-600"
+                        >
+                            Update Profile
+                        </button>
                     </div>
                 </div>
             </div>

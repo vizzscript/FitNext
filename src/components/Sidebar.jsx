@@ -5,7 +5,7 @@ import { WorkoutPlans } from "./WorkoutPlans";
 
 export function Sidebar({ user, tracking, onUserUpdate }) {
     return (
-        <div className="bg-gray-200 dark:bg-gray-800 flex flex-col rounded-xl items-center space-y-6 p-4 pt-10">
+        <div className="flex flex-col rounded-xl items-center space-y-6 p-4 pt-10">
             <ProfileCard user={user} onSave={onUserUpdate} />
             <DietPlans user={user} />
             <WorkoutPlans user={user} />

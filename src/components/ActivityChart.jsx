@@ -10,7 +10,7 @@ import {
 
 export function ActivityChart({ data }) {
     return (
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={300} >
             <LineChart data={data}>
                 <XAxis dataKey="date" />
                 <YAxis />

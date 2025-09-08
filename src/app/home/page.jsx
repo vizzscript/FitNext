@@ -48,8 +48,8 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center text-gray-900 dark:text-gray-100">
-        <p className="text-base text-gray-600 dark:text-gray-300">Loading…</p>
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-base">Loading…</p>
       </div>
     );
   }
@@ -57,7 +57,7 @@ export default function Home() {
 
   return (
     <motion.div
-      className="min-h-screen bg-white dark:bg-gray-900 flex flex-col items-center text-gray-900 dark:text-gray-100 font-sans p-6 relative"
+      className="min-h-screen flex flex-col items-center font-sans p-6 relative"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1 }}
@@ -83,14 +83,14 @@ export default function Home() {
         <h1 className="text-5xl font-extrabold tracking-tight mb-4 drop-shadow-lg">
           FitNext: Your Fitness Journey Starts Here
         </h1>
-        <p className="text-lg max-w-xl mx-auto text-gray-600 dark:text-gray-300">
+        <p className="text-lg max-w-xl mx-auto">
           Track your workouts, set achievable goals, and unlock badges on the way to a healthier,
           stronger you. Join the FitNext community to stay motivated and gamify your fitness goals!
         </p>
       </motion.header>
 
       <motion.div
-        className="w-full max-w-lg mx-auto bg-white dark:bg-gray-800 rounded-xl p-8 shadow-md relative z-10"
+        className="w-full max-w-lg mx-auto bg-gray-800 rounded-xl p-8 shadow-md relative z-10"
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 1, duration: 0.8 }}
@@ -98,11 +98,11 @@ export default function Home() {
         {showLogin ? (
           <>
             <Login onLogin={(user) => router.push("/dashboard")} />
-            <p className="mt-6 text-center text-gray-600 dark:text-gray-300">
+            <p className="mt-6 text-center text-gray-300">
               New to FitNext?{" "}
               <button
                 onClick={() => setShowLogin(false)}
-                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold hover:underline"
+                className="text-blue-400 hover:text-blue-300 font-semibold hover:underline"
               >
                 Sign up →
               </button>
@@ -111,11 +111,11 @@ export default function Home() {
         ) : (
           <>
             <SignUp onSignUpSuccess={() => setShowLogin(true)} />
-            <p className="mt-6 text-center text-gray-600 dark:text-gray-300">
+            <p className="mt-6 text-center text-gray-300">
               Already have an account?{" "}
               <button
                 onClick={() => setShowLogin(true)}
-                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold hover:underline"
+                className="text-blue-400 hover:text-blue-300 font-semibold hover:underline"
               >
                 Log in →
               </button>
@@ -125,7 +125,7 @@ export default function Home() {
       </motion.div>
 
       <motion.footer
-        className="mt-20 text-sm text-gray-500 dark:text-gray-400 opacity-70 relative z-10"
+        className="mt-20 text-sm text-gray-400 opacity-70 relative z-10"
         initial={{ y: 30, opacity: 0 }}
         animate={{ y: 0, opacity: 0.7 }}
         transition={{ delay: 1.8, duration: 0.8 }}

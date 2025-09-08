@@ -73,31 +73,31 @@ export default function VerifyEmail() {
     }
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 font-sans p-6">
+        <div className="min-h-screen flex flex-col items-center justify-center font-sans p-6">
             {isVerifyingLink && (
                 <>
-                    <h1 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+                    <h1 className="text-2xl font-semibold mb-4 text-gray-100">
                         Verifying your email...
                     </h1>
-                    <p className="text-gray-700 dark:text-gray-300 mb-6 max-w-md text-center">
+                    <p className="text-gray-300 mb-6 max-w-md text-center">
                         Please wait while we verify your email. This may take a few moments.
                     </p>
                 </>
             )}
 
             {loading && (
-                <p className="text-gray-700 dark:text-gray-200">
+                <p className="text-gray-200">
                     Checking verification status...
                 </p>
             )}
 
             {info && !loading && (
-                <p className="text-green-700 dark:text-green-400 mb-4">{info}</p>
+                <p className="text-green-400 mb-4">{info}</p>
             )}
 
             {error && (
                 <>
-                    <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
+                    <p className="text-red-400 mb-4">{error}</p>
                     <button
                         onClick={checkVerification}
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
@@ -115,10 +115,10 @@ export default function VerifyEmail() {
 
             {verified && !loading && (
                 <>
-                    <h1 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+                    <h1 className="text-2xl font-semibold mb-4 text-gray-100">
                         Email Verified!
                     </h1>
-                    <p className="text-gray-700 dark:text-gray-300 mb-6 max-w-md text-center">
+                    <p className="text-gray-300 mb-6 max-w-md text-center">
                         Redirecting you to login…
                     </p>
                 </>
@@ -126,10 +126,10 @@ export default function VerifyEmail() {
 
             {!verified && !loading && !error && (
                 <>
-                    <h1 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+                    <h1 className="text-2xl font-semibold mb-4 text-gray-100">
                         Verify Your Email
                     </h1>
-                    <p className="text-gray-700 dark:text-gray-300 mb-6 max-w-md text-center">
+                    <p className="text-gray-300 mb-6 max-w-md text-center">
                         We have sent a verification link to your email address. After clicking the link, return here to continue.
                     </p>
                     <button
