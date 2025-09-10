@@ -1,15 +1,14 @@
-import { DietPlans } from "./DietPlans";
-import { ProfileCard } from "./ProfileCard";
-import { TrackingDashboard } from "./TrackingDashboard";
-import { WorkoutPlans } from "./WorkoutPlans";
+// Sidebar.jsx
+"use client";
 
-export function Sidebar({ user, tracking, onUserUpdate }) {
+import { ProfileCard } from "./ProfileCard";
+import { RankCard } from "./RankCard";
+
+export function Sidebar({ user, profile, onUserUpdate }) {
     return (
         <div className="flex flex-col rounded-xl items-center space-y-6 p-4 pt-10">
             <ProfileCard user={user} onSave={onUserUpdate} />
-            <DietPlans user={user} />
-            <WorkoutPlans user={user} />
-            <TrackingDashboard tracking={tracking} />
+            <RankCard xp={profile?.xp || 0} />
         </div>
     );
 }
