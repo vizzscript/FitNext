@@ -1,13 +1,11 @@
 "use client";
-
-import { ActivitiesTab } from "@/components/ActivitiesTab";
-import { DietTab } from "@/components/DietTab";
-import { FastingTab } from "@/components/FastingTab";
 import { Navbar } from "@/components/Navbar";
+import { QuestList } from "@/components/QuestList";
 import { Sidebar } from "@/components/Sidebar";
 import { UserProfileForm } from "@/components/UserProfileForm";
-import { account, databases } from "@services/appwrite.client";
-import { Query } from "appwrite";
+import { createProfile, getProfileByUser, updateProfile } from "@/services/profile.service";
+import { completeQuest, listQuests } from "@/services/quest.service";
+import { account } from "@services/appwrite.client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -17,250 +15,140 @@ export default function Dashboard() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [profileCompleted, setProfileCompleted] = useState(false);
-    const [currentTab, setCurrentTab] = useState("activities");
-    const [tracking, setTracking] = useState({ dietProgress: 40, workoutProgress: 55 });
-    const [profileOpen, setProfileOpen] = useState(false);
-    const [dataLoading, setDataLoading] = useState(true);
-    const [journals, setJournals] = useState([]);
-    const [workouts, setWorkouts] = useState([]);
-    const [chartData, setChartData] = useState([]);
-
-    const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
-    const JOURNALS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_JOURNALS_COLLECTION_ID;
-    const WORKOUTS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_WORKOUTS_COLLECTION_ID;
-    const ACTIVITIES_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_ACTIVITIES_COLLECTION_ID;
+    const [profile, setProfile] = useState(null);
+    const [quests, setQuests] = useState([]);
+    const [tracking, setTracking] = useState("");
 
     useEffect(() => {
-        async function fetchUser() {
+        async function init() {
             setLoading(true);
             try {
-                const userDetails = await account.get();
-                const fullUser = {
-                    ...userDetails,
-                    ...userDetails.prefs,
-                    email: userDetails.email,
-                };
-                setUser(fullUser);
-                setProfileCompleted(!!fullUser.profileCompleted);
-                if (!fullUser.emailVerification) {
+                const acc = await account.get();
+                let prof = await getProfileByUser(acc.$id);
+                if (!prof) {
+                    prof = await createProfile(acc.$id, {
+                        xp: 0,
+                        level: 1,
+                        steps: 0,
+                        calories: 0,
+                        completedQuests: []
+                    });
+                    toast.success("Profile created!");
+                }
+
+                const mergedUser = { ...acc, ...acc.prefs, ...prof, profileCompleted: !!acc.prefs?.profileCompleted };
+
+                setUser(mergedUser);
+                setProfile(prof);
+                setProfileCompleted(!!mergedUser.profileCompleted);
+
+                const allQuests = await listQuests();
+                setQuests(allQuests);
+
+                if (!acc.emailVerification) {
                     router.replace('/verifyemail');
                     return;
                 }
-            } catch {
-                // Not logged in → redirect to login/home
-                setUser(null);
-                try {
-                    router.replace("/home");
-                } catch { }
-                return;
+            } catch (err) {
+                console.error(err);
+                toast.error("Dashboard failed to load.");
             } finally {
                 setLoading(false);
             }
         }
-        // Optimistically use local flag to avoid showing the form on refreshes
-        try {
-            const localCompleted = typeof window !== "undefined" && window.localStorage.getItem("profileCompleted") === "true";
-            if (localCompleted) setProfileCompleted(true);
-        } catch { }
-
-        fetchUser();
+        init();
     }, []);
-
-    useEffect(() => {
-        if (loading || !profileCompleted || !user?.$id) return;
-
-        let isCancelled = false;
-        async function fetchDashboardData() {
-            setDataLoading(true);
-            try {
-                const commonQueries = [
-                    Query.equal("userId", user.$id),
-                    Query.orderDesc("$createdAt"),
-                    Query.limit(10),
-                ];
-
-                const requests = [
-                    JOURNALS_COLLECTION_ID
-                        ? databases.listDocuments(DATABASE_ID, JOURNALS_COLLECTION_ID, commonQueries)
-                        : Promise.resolve(null),
-                    WORKOUTS_COLLECTION_ID
-                        ? databases.listDocuments(DATABASE_ID, WORKOUTS_COLLECTION_ID, commonQueries)
-                        : Promise.resolve(null),
-                    ACTIVITIES_COLLECTION_ID
-                        ? databases.listDocuments(DATABASE_ID, ACTIVITIES_COLLECTION_ID, [
-                            Query.equal("userId", user.$id),
-                            Query.orderAsc("date"),
-                            Query.limit(30),
-                        ])
-                        : Promise.resolve(null),
-                ];
-
-                const [journalsRes, workoutsRes, activitiesRes] = await Promise.allSettled(requests);
-
-                if (!isCancelled) {
-                    if (journalsRes.status === "fulfilled" && journalsRes.value) {
-                        const mapped = (journalsRes.value.documents || []).map((d) => ({
-                            id: d.$id,
-                            title: d.title || d.name || "Entry",
-                            details: d.details || d.description || "",
-                            time: d.time || new Date(d.$createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-                        }));
-                        setJournals(mapped);
-                    }
-
-                    if (workoutsRes.status === "fulfilled" && workoutsRes.value) {
-                        const mapped = (workoutsRes.value.documents || []).map((d) => ({
-                            id: d.$id,
-                            name: d.name || d.type || "Workout",
-                            distance: d.distance ? `${d.distance} km` : d.distance_label || "-",
-                            duration: d.duration ? `${d.duration} mins` : d.duration_label || "-",
-                            datetime: d.datetime || new Date(d.$createdAt).toISOString().slice(0, 16).replace("T", " "),
-                            completion: typeof d.completion === "number" ? d.completion : d.progress || 0,
-                        }));
-                        setWorkouts(mapped);
-                    }
-
-                    if (activitiesRes.status === "fulfilled" && activitiesRes.value) {
-                        const mapped = (activitiesRes.value.documents || []).map((d) => ({
-                            date: d.date || new Date(d.$createdAt).toLocaleDateString(undefined, { month: "short", day: "2-digit" }),
-                            diet: typeof d.diet === "number" ? d.diet : 0,
-                            workout: typeof d.workout === "number" ? d.workout : 0,
-                        }));
-                        setChartData(mapped);
-                    }
-                }
-            } catch (error) {
-                toast.error("Failed loading dashboard data: " + error.message);
-            } finally {
-                if (!isCancelled) setDataLoading(false);
-            }
-        }
-
-        fetchDashboardData();
-        return () => {
-            isCancelled = true;
-        };
-    }, [loading, profileCompleted, user?.$id]);
 
     const handleProfileComplete = async (profileData) => {
         try {
             await account.updateName(profileData.name);
             await account.updatePrefs({ ...profileData, profileCompleted: true });
-            setUser((prev) => ({ ...prev, ...profileData, profileCompleted: true }));
+            setUser(prev => ({ ...prev, ...profileData, profileCompleted: true }));
             setProfileCompleted(true);
-            try {
-                if (typeof window !== "undefined") {
-                    window.localStorage.setItem("profileCompleted", "true");
-                }
-            } catch { }
+
+            if (typeof window !== "undefined") {
+                window.localStorage.setItem("profileCompleted", "true");
+            }
+
             toast.success("User data has been submitted successfully.");
         } catch (error) {
             toast.error("Error while submitting form: " + error.message);
         }
     };
 
-    const handleUserUpdate = async (updatedUser) => {
+    const handleUserUpdate = async (updatedData) => {
         try {
-            // Update account name if changed
-            if (updatedUser.name !== user.name) {
-                await account.updateName(updatedUser.name);
+            if (updatedData.name && updatedData.name !== user.name) {
+                await account.updateName(updatedData.name);
             }
 
-            // Update prefs including avatar
             await account.updatePrefs({
-                ...user.prefs,       // preserve existing prefs
-                ...updatedUser
+                ...user.prefs,
+                ...updatedData
             });
 
-            setUser(prev => ({ ...prev, ...updatedUser }));
-            toast.success("User data has been updated successfully!");
-        } catch (error) {
-            toast.error("Error while updating details: " + error.message);
+            setUser(prev => ({ ...prev, ...updatedData, prefs: { ...prev.prefs, ...updatedData } }));
+            toast.success("Profile updated successfully!");
+        } catch (err) {
+            toast.error("Failed to update profile: " + err.message);
         }
     };
 
-
-    if (loading || !user) return null;
+    if (loading || !user || !profile) return <div className="text-center py-16">Loading...</div>;
 
     if (!profileCompleted) {
         return <UserProfileForm onComplete={handleProfileComplete} />;
     }
 
-    // Sample data
-    const stats = [
-        { label: "Heart Rate", value: 96, unit: "bpm", gradientColors: "from-blue-400 to-blue-600" },
-        { label: "Steps", value: 1868, goal: 6000, gradientColors: "from-pink-400 to-pink-600" },
-        { label: "Calories", value: 1126, unit: "kcal", goal: 3000, gradientColors: "from-orange-400 to-orange-600" },
-        { label: "Sleep", value: "5h 2m", goal: "8h", gradientColors: "from-cyan-400 to-cyan-600" },
-    ];
-
-    const fallbackChartData = [
-        { date: "Aug 29", diet: 50, workout: 70 },
-        { date: "Aug 30", diet: 70, workout: 65 },
-        { date: "Aug 31", diet: 60, workout: 50 },
-        { date: "Sep 01", diet: 80, workout: 70 },
-        { date: "Sep 02", diet: 55, workout: 45 },
-        { date: "Sep 03", diet: 90, workout: 50 },
-        { date: "Sep 04", diet: 85, workout: 60 },
-    ];
-
-    const effectiveChartData = chartData && chartData.length > 0 ? chartData : fallbackChartData;
-    const effectiveJournals = journals && journals.length > 0 ? journals : [
-        { id: 1, title: "Morning Walk", details: "30m | 1.68km | 36.65%", time: "7:00 AM" },
-        { id: 2, title: "Water Taken", details: "3 Glasses | 18.75%", time: "7:40 AM" },
-        { id: 3, title: "Breakfast", details: "Wheat Chapathi, Boiled Egg, Dosa | 12.20%", time: "9:00 AM" },
-    ];
-    const effectiveWorkouts = workouts && workouts.length > 0 ? workouts : [
-        { id: 1, name: "Running", distance: "1.6 km", duration: "16 mins", datetime: "2025-09-04 02:30", completion: 20 },
-        { id: 2, name: "Swimming", distance: "1.8 km", duration: "33 mins", datetime: "2025-09-04 01:30", completion: 27 },
-    ];
+    async function handleCompleteQuest(quest) {
+        try {
+            if (!profile || !profile.$id) {
+                toast.error("Profile not loaded yet. Please wait...");
+                return;
+            }
+            const xpGained = Number(quest?.xpRewards || 100);
+            const completed = Array.isArray(profile.completedQuests)
+                ? [...profile.completedQuests, quest.$id]
+                : [quest.$id];
+            await completeQuest(quest.$id, profile.$id);
+            const updatedProfile = await updateProfile(profile.$id, {
+                xp: (profile?.xp || 0) + xpGained,
+                completedQuests: completed,
+            });
+            setProfile(updatedProfile);
+            toast.success(`+${xpGained} XP earned! Quest completed 🎉`);
+        } catch (err) {
+            console.error("Error completing quest", err);
+            toast.error("Failed to complete quest");
+        }
+    }
 
     return (
         <>
-            <Navbar
-                currentTab={currentTab}
-                onTabChange={setCurrentTab}
-                user={user}
-                onProfileClick={() => setProfileOpen((prev) => !prev)}
-            />
-            <div className="p-6 min-h-screen relative w-full mx-auto">
-                <h1 className="text-3xl font-bold mb-8 text-center">
+            <Navbar />
+            <div className="px-4 sm:px-6 lg:px-8 py-6 min-h-screen w-full mx-auto">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-center">
                     Welcome, {user?.name || "User"}
                 </h1>
 
-                {/* Main Content */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Left Section */}
-                    <div className="lg:col-span-2 space-y-8">
-                        {currentTab === "activities" && (
-                            <ActivitiesTab
-                                stats={stats}
-                                chartData={effectiveChartData}
-                                journals={effectiveJournals}
-                                workouts={effectiveWorkouts}
-                                dataLoading={dataLoading}
-                            />
-                        )}
-
-                        {currentTab === "diet" && (
-                            <DietTab
-                                user={user}
-                                journals={effectiveJournals}
-                                dataLoading={dataLoading}
-                            />
-                        )}
-
-                        {currentTab === "fasting" && (
-                            <FastingTab
-                                user={user}
-                                dataLoading={dataLoading}
-                            />
-                        )}
+                {/* Responsive Layout */}
+                <div className="flex flex-col-reverse lg:grid lg:grid-cols-3 gap-6 lg:gap-8">
+                    {/* Quests Section */}
+                    <div className="lg:col-span-2 space-y-6">
+                        <QuestList quests={quests} onComplete={handleCompleteQuest} profile={profile} />
                     </div>
 
-                    {/* Sidebar */}
-                    <Sidebar user={user} tracking={tracking} onUserUpdate={handleUserUpdate} />
+                    {/* Sidebar / User Profile */}
+                    <div className="lg:col-span-1 mb-6 lg:mb-0">
+                        <Sidebar
+                            user={user}
+                            tracking={tracking}
+                            onUserUpdate={handleUserUpdate}
+                            profile={profile}
+                        />
+                    </div>
                 </div>
+
             </div>
         </>
     );
